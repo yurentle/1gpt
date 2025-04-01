@@ -12,7 +12,7 @@ export class APIClient {
       throw new Error(`未找到供应商: ${providerId}`);
     }
 
-    return ProviderFactory.createProvider(provider, provider.apiKey);
+    return ProviderFactory.createProvider(provider, provider.apiKey, provider.apiBase);
   }
 
   static async makeImageGeneration(

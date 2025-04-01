@@ -9,6 +9,7 @@ export class OpenAIProvider implements ProviderAPI {
     this.client = new OpenAI({
       apiKey,
       baseURL: apiBase,
+      dangerouslyAllowBrowser: true,
     });
   }
 
