@@ -26,7 +26,15 @@ export const useChatStore = create<ChatState>()(
         const newChat: Chat = {
           id: chatId,
           title: '新对话',
-          messages: [],
+          messages: [
+            {
+              id: 'welcome',
+              role: 'assistant',
+              content:
+                '你好！我是你的 AI 助手。我可以帮你：\n• 回答问题\n• 编写代码\n• 生成图片\n• 分析数据\n\n让我们开始对话吧！',
+              timestamp: Date.now(),
+            },
+          ],
           providerId,
           modelId,
           createdAt: Date.now(),

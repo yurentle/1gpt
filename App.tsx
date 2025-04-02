@@ -44,11 +44,18 @@ function ChatStack({ navigation }: ChatStackProps) {
   const currentModel = currentProvider?.supportedModels.find(m => m.id === defaultModelId);
   const { createNewChat, chats } = useChatStore();
 
-  // 添加检查当前会话是否为空的函数
+  // 修改检查当前会话是否为空的函数
   const isCurrentChatEmpty = (chatId: string | undefined) => {
     if (!chatId) return true;
     const chat = chats.find(c => c.id === chatId);
-    return !chat || chat.messages.length === 0;
+    if (!chat) return true;
+
+    // 如果只有一条消息且是欢迎消息，则认为是空会话
+    if (chat.messages.length === 1 && chat.messages[0].id === 'welcome') {
+      return true;
+    }
+
+    return false;
   };
 
   return (
