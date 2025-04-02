@@ -38,35 +38,31 @@ interface SettingsStackProps {
 }
 
 function ChatStack({ navigation }: ChatStackProps) {
+  const { providers, defaultProviderId, defaultModelId } = useSettingsStore();
+  const currentProvider = providers.find(p => p.id === defaultProviderId);
+  const currentModel = currentProvider?.supportedModels.find(m => m.id === defaultModelId);
+
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Chat"
         component={ChatScreen}
         options={{
-          headerTitle: () => {
-            const { providers, defaultProviderId, defaultModelId } = useSettingsStore.getState();
-            const currentProvider = providers.find(p => p.id === defaultProviderId);
-            const currentModel = currentProvider?.supportedModels.find(
-              m => m.id === defaultModelId
-            );
-
-            return (
-              <Button
-                mode="text"
-                onPress={() => {
-                  navigation.navigate('ChatStack', {
-                    screen: 'Chat',
-                    params: { showModelSelect: true },
-                  });
-                }}
-                icon="chevron-down"
-                contentStyle={{ flexDirection: 'row-reverse' }}
-              >
-                {currentModel?.name || '选择模型'}
-              </Button>
-            );
-          },
+          headerTitle: () => (
+            <Button
+              mode="text"
+              onPress={() => {
+                navigation.navigate('ChatStack', {
+                  screen: 'Chat',
+                  params: { showModelSelect: true },
+                } as const);
+              }}
+              icon="chevron-down"
+              contentStyle={{ flexDirection: 'row-reverse' }}
+            >
+              {currentModel?.name || '选择模型'}
+            </Button>
+          ),
           headerLeft: () => <IconButton icon="menu" onPress={() => navigation.openDrawer()} />,
           headerTitleAlign: 'center',
         }}
