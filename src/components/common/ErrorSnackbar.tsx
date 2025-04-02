@@ -21,4 +21,4 @@ export const ErrorSnackbar = ({ visible, message, onDismiss }: ErrorSnackbarProp
       {message}
     </Snackbar>
   );
-}; 
+};

@@ -37,14 +37,14 @@ export const ProviderForm = ({ initialValues, onSubmit, onCancel }: ProviderForm
   const handleDeleteModel = (modelId: string) => {
     setValues({
       ...values,
-      supportedModels: values.supportedModels.filter((m) => m.id !== modelId),
+      supportedModels: values.supportedModels.filter(m => m.id !== modelId),
       defaultModel: values.defaultModel === modelId ? '' : values.defaultModel,
     });
   };
 
   const handleModelSubmit = (model: Model) => {
     const updatedModels = selectedModel
-      ? values.supportedModels.map((m) => (m.id === model.id ? model : m))
+      ? values.supportedModels.map(m => (m.id === model.id ? model : m))
       : [...values.supportedModels, model];
 
     setValues({
@@ -59,27 +59,27 @@ export const ProviderForm = ({ initialValues, onSubmit, onCancel }: ProviderForm
       <TextInput
         label="供应商ID"
         value={values.id}
-        onChangeText={(text) => setValues({ ...values, id: text })}
+        onChangeText={text => setValues({ ...values, id: text })}
         style={styles.input}
         disabled={!!initialValues?.id}
       />
       <TextInput
         label="供应商名称"
         value={values.name}
-        onChangeText={(text) => setValues({ ...values, name: text })}
+        onChangeText={text => setValues({ ...values, name: text })}
         style={styles.input}
       />
       <TextInput
         label="API Key"
         value={values.apiKey}
-        onChangeText={(text) => setValues({ ...values, apiKey: text })}
+        onChangeText={text => setValues({ ...values, apiKey: text })}
         style={styles.input}
         secureTextEntry
       />
       <TextInput
         label="API Base URL (可选)"
         value={values.apiBase}
-        onChangeText={(text) => setValues({ ...values, apiBase: text })}
+        onChangeText={text => setValues({ ...values, apiBase: text })}
         style={styles.input}
       />
 
@@ -90,11 +90,7 @@ export const ProviderForm = ({ initialValues, onSubmit, onCancel }: ProviderForm
           onEdit={handleEditModel}
           onDelete={handleDeleteModel}
         />
-        <Button
-          mode="outlined"
-          onPress={handleAddModel}
-          style={styles.addButton}
-        >
+        <Button mode="outlined" onPress={handleAddModel} style={styles.addButton}>
           添加模型
         </Button>
       </List.Section>
@@ -154,4 +150,4 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 8,
   },
-}); 
+});

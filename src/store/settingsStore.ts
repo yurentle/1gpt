@@ -22,8 +22,8 @@ export const useSettingsStore = create<SettingsState>()(
       defaultProviderId: null,
       defaultModelId: null,
 
-      addProvider: (provider) =>
-        set((state) => {
+      addProvider: provider =>
+        set(state => {
           const providers = [...state.providers, provider];
           if (providers.length === 1) {
             return {
@@ -36,16 +36,14 @@ export const useSettingsStore = create<SettingsState>()(
         }),
 
       updateProvider: (providerId, updates) =>
-        set((state) => ({
-          providers: state.providers.map((p) =>
-            p.id === providerId ? { ...p, ...updates } : p
-          ),
+        set(state => ({
+          providers: state.providers.map(p => (p.id === providerId ? { ...p, ...updates } : p)),
         })),
 
-      removeProvider: (providerId) =>
-        set((state) => {
+      removeProvider: providerId =>
+        set(state => {
           const newState: Partial<SettingsState> = {
-            providers: state.providers.filter((p) => p.id !== providerId),
+            providers: state.providers.filter(p => p.id !== providerId),
           };
 
           if (state.defaultProviderId === providerId) {
@@ -56,8 +54,8 @@ export const useSettingsStore = create<SettingsState>()(
           return newState as SettingsState;
         }),
 
-      setDefaultProvider: (providerId) =>
-        set((state) => {
+      setDefaultProvider: providerId =>
+        set(state => {
           const provider = state.providers.find(p => p.id === providerId);
           return {
             defaultProviderId: providerId,
@@ -65,14 +63,11 @@ export const useSettingsStore = create<SettingsState>()(
           };
         }),
 
-      setDefaultModel: (modelId) =>
-        set({ defaultModelId: modelId }),
+      setDefaultModel: modelId => set({ defaultModelId: modelId }),
 
-      selectModel: (modelId) =>
-        set((state) => {
-          const provider = state.providers.find(p =>
-            p.supportedModels.some(m => m.id === modelId)
-          );
+      selectModel: modelId =>
+        set(state => {
+          const provider = state.providers.find(p => p.supportedModels.some(m => m.id === modelId));
           if (!provider) return state;
 
           return {

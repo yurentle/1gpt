@@ -14,11 +14,7 @@ export const ImageMessage = ({ url, isUser }: ImageMessageProps) => {
   return (
     <View style={[styles.container, isUser ? styles.userContainer : styles.assistantContainer]}>
       <Surface style={[styles.bubble, isUser ? styles.userBubble : styles.assistantBubble]}>
-        <Image
-          source={{ uri: url }}
-          style={styles.image}
-          resizeMode="contain"
-        />
+        <Image source={{ uri: url }} style={styles.image} resizeMode="contain" />
       </Surface>
     </View>
   );
@@ -49,4 +45,4 @@ const styles = StyleSheet.create({
     width: IMAGE_WIDTH,
     height: IMAGE_WIDTH,
   },
-}); 
+});

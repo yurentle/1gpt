@@ -10,12 +10,7 @@ interface ModelFormProps {
   onCancel: () => void;
 }
 
-export const ModelForm = ({
-  initialValues,
-  providerId,
-  onSubmit,
-  onCancel,
-}: ModelFormProps) => {
+export const ModelForm = ({ initialValues, providerId, onSubmit, onCancel }: ModelFormProps) => {
   const [values, setValues] = useState<Partial<Model>>({
     id: initialValues?.id || '',
     name: initialValues?.name || '',
@@ -40,20 +35,20 @@ export const ModelForm = ({
       <TextInput
         label="模型ID"
         value={values.id}
-        onChangeText={(text) => setValues({ ...values, id: text })}
+        onChangeText={text => setValues({ ...values, id: text })}
         style={styles.input}
         disabled={!!initialValues?.id}
       />
       <TextInput
         label="模型名称"
         value={values.name}
-        onChangeText={(text) => setValues({ ...values, name: text })}
+        onChangeText={text => setValues({ ...values, name: text })}
         style={styles.input}
       />
       <View style={styles.switchContainer}>
         <Switch
           value={values.capabilities?.chat}
-          onValueChange={(value) =>
+          onValueChange={value =>
             setValues({
               ...values,
               capabilities: { ...values.capabilities, chat: value },
@@ -70,7 +65,7 @@ export const ModelForm = ({
       <View style={styles.switchContainer}>
         <Switch
           value={values.capabilities?.imageGeneration}
-          onValueChange={(value) =>
+          onValueChange={value =>
             setValues({
               ...values,
               capabilities: { ...values.capabilities, imageGeneration: value },
@@ -87,27 +82,21 @@ export const ModelForm = ({
       <TextInput
         label="最大Token数"
         value={values.maxTokens?.toString() || ''}
-        onChangeText={(text) =>
-          setValues({ ...values, maxTokens: parseInt(text) || undefined })
-        }
+        onChangeText={text => setValues({ ...values, maxTokens: parseInt(text) || undefined })}
         keyboardType="numeric"
         style={styles.input}
       />
       <TextInput
         label="温度 (0-2)"
         value={values.temperature?.toString() || ''}
-        onChangeText={(text) =>
-          setValues({ ...values, temperature: parseFloat(text) || undefined })
-        }
+        onChangeText={text => setValues({ ...values, temperature: parseFloat(text) || undefined })}
         keyboardType="numeric"
         style={styles.input}
       />
       <TextInput
         label="上下文长度"
         value={values.contextLength?.toString() || ''}
-        onChangeText={(text) =>
-          setValues({ ...values, contextLength: parseInt(text) || undefined })
-        }
+        onChangeText={text => setValues({ ...values, contextLength: parseInt(text) || undefined })}
         keyboardType="numeric"
         style={styles.input}
       />
@@ -147,4 +136,4 @@ const styles = StyleSheet.create({
   button: {
     marginLeft: 8,
   },
-}); 
+});

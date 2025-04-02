@@ -19,9 +19,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   return (
     <View style={[styles.container, isUser ? styles.userContainer : styles.assistantContainer]}>
       <Surface style={[styles.bubble, isUser ? styles.userBubble : styles.assistantBubble]}>
-        <Text style={isUser ? styles.userText : styles.assistantText}>
-          {message.content}
-        </Text>
+        <Text style={isUser ? styles.userText : styles.assistantText}>{message.content}</Text>
       </Surface>
     </View>
   );
@@ -54,4 +52,4 @@ const styles = StyleSheet.create({
   assistantText: {
     color: '#000000',
   },
-}); 
+});

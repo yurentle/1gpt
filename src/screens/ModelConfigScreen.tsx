@@ -14,9 +14,9 @@ type RootStackParamList = {
 type Props = NativeStackScreenProps<RootStackParamList, 'ModelConfig'>;
 
 export const ModelConfigScreen = ({ navigation }: Props) => {
-  const { 
+  const {
     providers,
-    addProvider, 
+    addProvider,
     removeProvider,
     setDefaultProvider,
     setDefaultModel,
@@ -87,33 +87,33 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
     if (currentProvider) {
       removeProvider(currentProvider.id);
     }
-    
+
     const newProvider = {
       ...formData.provider,
       apiKey: formData.apiKey.trim(),
       apiBase: formData.apiBase.trim() || undefined,
       supportedModels: configuredModels,
     };
-    
+
     addProvider(newProvider);
     setDefaultProvider(newProvider.id);
     setDefaultModel(formData.selectedModelId);
-    
+
     navigation.goBack();
   };
 
-  const isValid = 
-    formData.provider && 
+  const isValid =
+    formData.provider &&
     formData.apiKey.trim() &&
     formData.selectedModelId &&
-    parseFloat(formData.temperature) >= 0 && 
+    parseFloat(formData.temperature) >= 0 &&
     parseFloat(formData.temperature) <= 2;
 
   return (
     <ScrollView style={styles.container}>
       <List.Section>
         <List.Subheader>基本配置</List.Subheader>
-        
+
         <List.Item
           title="模型提供方"
           description={formData.provider?.name || '请选择'}
@@ -125,7 +125,7 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
         <TextInput
           label="API 秘钥"
           value={formData.apiKey}
-          onChangeText={(text) => setFormData({ ...formData, apiKey: text })}
+          onChangeText={text => setFormData({ ...formData, apiKey: text })}
           style={styles.input}
           secureTextEntry
         />
@@ -133,14 +133,17 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
         <TextInput
           label="API 域名（可选）"
           value={formData.apiBase}
-          onChangeText={(text) => setFormData({ ...formData, apiBase: text })}
+          onChangeText={text => setFormData({ ...formData, apiBase: text })}
           style={styles.input}
           placeholder={formData.provider?.defaultApiBase || '使用默认域名'}
         />
 
         <List.Item
           title="选择模型"
-          description={formData.provider?.supportedModels.find(m => m.id === formData.selectedModelId)?.name || '请选择'}
+          description={
+            formData.provider?.supportedModels.find(m => m.id === formData.selectedModelId)?.name ||
+            '请选择'
+          }
           onPress={() => setShowModelSelect(true)}
           right={props => <List.Icon {...props} icon="chevron-right" />}
         />
@@ -149,11 +152,11 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
 
       <List.Section>
         <List.Subheader>高级配置</List.Subheader>
-        
+
         <TextInput
           label="温度 (0-2)"
           value={formData.temperature}
-          onChangeText={(text) => setFormData({ ...formData, temperature: text })}
+          onChangeText={text => setFormData({ ...formData, temperature: text })}
           keyboardType="numeric"
           style={styles.input}
         />
@@ -164,22 +167,15 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
         <TextInput
           label="上下文长度"
           value={formData.contextLength}
-          onChangeText={(text) => setFormData({ ...formData, contextLength: text })}
+          onChangeText={text => setFormData({ ...formData, contextLength: text })}
           keyboardType="numeric"
           style={styles.input}
         />
-        <HelperText type="info">
-          影响模型可以记住的对话历史长度
-        </HelperText>
+        <HelperText type="info">影响模型可以记住的对话历史长度</HelperText>
       </List.Section>
 
       <View style={styles.buttonContainer}>
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          disabled={!isValid}
-          style={styles.button}
-        >
+        <Button mode="contained" onPress={handleSubmit} disabled={!isValid} style={styles.button}>
           保存
         </Button>
       </View>
@@ -192,7 +188,7 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
           contentContainerStyle={styles.modal}
         >
           <ScrollView>
-            {PRESET_PROVIDERS.map((provider) => (
+            {PRESET_PROVIDERS.map(provider => (
               <List.Item
                 key={provider.id}
                 title={provider.name}
@@ -221,7 +217,7 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
                   model.capabilities.imageGeneration ? ' 图片生成' : ''
                 }`}
                 onPress={() => handleModelSelect(model.id)}
-                right={props => 
+                right={props =>
                   formData.selectedModelId === model.id ? (
                     <List.Icon {...props} icon="check" />
                   ) : null
@@ -261,4 +257,4 @@ const styles = StyleSheet.create({
   modalButton: {
     marginTop: 16,
   },
-}); 
+});

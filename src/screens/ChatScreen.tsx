@@ -20,7 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export const ChatScreen = ({ route, navigation }: Props) => {
   const { chatId } = route.params || {};
-  const { chats, addMessage, createChat, updateMessage, removeMessage } = useChatStore();
+  const { chats, addMessage, createChat, updateMessage, removeMessage, getOrCreateChat } =
+    useChatStore();
   const { providers, defaultProviderId, defaultModelId, setDefaultModel } = useSettingsStore();
   const chat = chats.find(c => c.id === chatId);
   const [isImageDialogVisible, setIsImageDialogVisible] = useState(false);
@@ -31,12 +32,11 @@ export const ChatScreen = ({ route, navigation }: Props) => {
   const currentProvider = providers.find(p => p.id === defaultProviderId);
 
   useEffect(() => {
-    console.log('chat', {chat, defaultProviderId, defaultModelId});
     if (!chat && defaultProviderId && defaultModelId) {
-      const newChatId = createChat(defaultProviderId, defaultModelId);
-      navigation.setParams({ chatId: newChatId });
+      const existingChatId = getOrCreateChat(defaultProviderId, defaultModelId);
+      navigation.setParams({ chatId: existingChatId });
     }
-  }, [chat, defaultProviderId, defaultModelId, createChat, navigation]);
+  }, [chat, defaultProviderId, defaultModelId, getOrCreateChat, navigation]);
 
   useEffect(() => {
     if (route.params?.showModelSelect) {
@@ -45,83 +45,88 @@ export const ChatScreen = ({ route, navigation }: Props) => {
     }
   }, [route.params?.showModelSelect, navigation]);
 
-  const handleSend = useCallback(async (content: string) => {
-    if (!chat) return;
+  const handleSend = useCallback(
+    async (content: string) => {
+      if (!chat) return;
 
-    const userMessage = {
-      id: Date.now().toString(),
-      role: 'user' as const,
-      content,
-      timestamp: Date.now(),
-    };
-    addMessage(chat.id, userMessage);
-
-    setIsLoading(true);
-    const assistantMessageId = (Date.now() + 1).toString();
-    
-    try {
-      // 创建初始的助手消息
-      addMessage(chat.id, {
-        id: assistantMessageId,
-        role: 'assistant',
-        content: '',
-        timestamp: Date.now(),
-      });
-
-      // 获取流式响应
-      const response = await APIClient.makeStreamCompletion(chat.providerId, {
-        messages: [...chat.messages, userMessage].map(({ role, content }) => ({
-          role,
-          content,
-        })),
-        model: chat.modelId,
-        onUpdate: (content) => {
-          // 更新助手消息的内容
-          updateMessage(chat.id, assistantMessageId, content);
-        },
-      });
-
-    } catch (error) {
-      setError(error instanceof Error ? error.message : '发送消息失败');
-      // 发生错误时删除助手消息
-      removeMessage(chat.id, assistantMessageId);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chat, addMessage, updateMessage, removeMessage]);
-
-  const handleImageGeneration = useCallback(async (prompt: string) => {
-    if (!chat) return;
-
-    const userMessage = {
-      id: Date.now().toString(),
-      role: 'user' as const,
-      content: `生成图片: ${prompt}`,
-      timestamp: Date.now(),
-    };
-    addMessage(chat.id, userMessage);
-
-    setIsLoading(true);
-    try {
-      const response = await APIClient.makeImageGeneration(chat.providerId, {
-        prompt,
-        model: chat.modelId,
-        n: 1,
-      });
-
-      const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant' as const,
-        content: `image://${response.data[0].url}`,
+      const userMessage = {
+        id: Date.now().toString(),
+        role: 'user' as const,
+        content,
         timestamp: Date.now(),
       };
-      addMessage(chat.id, assistantMessage);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : '图片生成失败');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chat, addMessage]);
+      addMessage(chat.id, userMessage);
+
+      setIsLoading(true);
+      const assistantMessageId = (Date.now() + 1).toString();
+
+      try {
+        // 创建初始的助手消息
+        addMessage(chat.id, {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now(),
+        });
+
+        // 获取流式响应
+        const response = await APIClient.makeStreamCompletion(chat.providerId, {
+          messages: [...chat.messages, userMessage].map(({ role, content }) => ({
+            role,
+            content,
+          })),
+          model: chat.modelId,
+          onUpdate: content => {
+            // 更新助手消息的内容
+            updateMessage(chat.id, assistantMessageId, content);
+          },
+        });
+      } catch (error) {
+        setError(error instanceof Error ? error.message : '发送消息失败');
+        // 发生错误时删除助手消息
+        removeMessage(chat.id, assistantMessageId);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [chat, addMessage, updateMessage, removeMessage]
+  );
+
+  const handleImageGeneration = useCallback(
+    async (prompt: string) => {
+      if (!chat) return;
+
+      const userMessage = {
+        id: Date.now().toString(),
+        role: 'user' as const,
+        content: `生成图片: ${prompt}`,
+        timestamp: Date.now(),
+      };
+      addMessage(chat.id, userMessage);
+
+      setIsLoading(true);
+      try {
+        const response = await APIClient.makeImageGeneration(chat.providerId, {
+          prompt,
+          model: chat.modelId,
+          n: 1,
+        });
+
+        const assistantMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant' as const,
+          content: `image://${response.data[0].url}`,
+          timestamp: Date.now(),
+        };
+        addMessage(chat.id, assistantMessage);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : '图片生成失败');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [chat, addMessage]
+  );
 
   const handleModelSelect = (modelId: string) => {
     setDefaultModel(modelId);
@@ -129,7 +134,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
@@ -149,11 +154,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
         onDismiss={() => setIsImageDialogVisible(false)}
         onGenerate={handleImageGeneration}
       />
-      <ErrorSnackbar
-        visible={!!error}
-        message={error || ''}
-        onDismiss={() => setError(null)}
-      />
+      <ErrorSnackbar visible={!!error} message={error || ''} onDismiss={() => setError(null)} />
 
       <Portal>
         <Modal
@@ -172,14 +173,12 @@ export const ChatScreen = ({ route, navigation }: Props) => {
                   model.capabilities.chat && model.capabilities.imageGeneration
                     ? '支持聊天和图片生成'
                     : model.capabilities.chat
-                    ? '支持聊天'
-                    : '支持图片生成'
+                      ? '支持聊天'
+                      : '支持图片生成'
                 }
                 onPress={() => handleModelSelect(model.id)}
-                right={props => 
-                  defaultModelId === model.id ? (
-                    <List.Icon {...props} icon="check" />
-                  ) : null
+                right={props =>
+                  defaultModelId === model.id ? <List.Icon {...props} icon="check" /> : null
                 }
               />
             ))}
@@ -214,4 +213,4 @@ const styles = StyleSheet.create({
     padding: 16,
     textAlign: 'center',
   },
-}); 
+});

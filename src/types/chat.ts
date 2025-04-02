@@ -13,4 +13,4 @@ export interface Chat {
   modelId: string;
   createdAt: number;
   updatedAt: number;
-} 
+}

@@ -12,7 +12,7 @@ interface ModelListProps {
 export const ModelList = ({ models, onEdit, onDelete }: ModelListProps) => {
   return (
     <View style={styles.container}>
-      {models.map((model) => (
+      {models.map(model => (
         <List.Item
           key={model.id}
           title={model.name}
@@ -22,12 +22,8 @@ export const ModelList = ({ models, onEdit, onDelete }: ModelListProps) => {
             .join(', ')}`}
           right={() => (
             <View style={styles.actions}>
-              {onEdit && (
-                <IconButton icon="pencil" onPress={() => onEdit(model)} />
-              )}
-              {onDelete && (
-                <IconButton icon="delete" onPress={() => onDelete(model.id)} />
-              )}
+              {onEdit && <IconButton icon="pencil" onPress={() => onEdit(model)} />}
+              {onDelete && <IconButton icon="delete" onPress={() => onDelete(model.id)} />}
             </View>
           )}
         />
@@ -44,4 +40,4 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-}); 
+});

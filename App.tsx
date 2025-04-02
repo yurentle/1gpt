@@ -40,22 +40,24 @@ interface SettingsStackProps {
 function ChatStack({ navigation }: ChatStackProps) {
   return (
     <Stack.Navigator>
-      <Stack.Screen 
-        name="Chat" 
+      <Stack.Screen
+        name="Chat"
         component={ChatScreen}
         options={{
           headerTitle: () => {
             const { providers, defaultProviderId, defaultModelId } = useSettingsStore.getState();
             const currentProvider = providers.find(p => p.id === defaultProviderId);
-            const currentModel = currentProvider?.supportedModels.find(m => m.id === defaultModelId);
-            
+            const currentModel = currentProvider?.supportedModels.find(
+              m => m.id === defaultModelId
+            );
+
             return (
               <Button
                 mode="text"
                 onPress={() => {
                   navigation.navigate('ChatStack', {
                     screen: 'Chat',
-                    params: { showModelSelect: true }
+                    params: { showModelSelect: true },
                   });
                 }}
                 icon="chevron-down"
@@ -65,12 +67,7 @@ function ChatStack({ navigation }: ChatStackProps) {
               </Button>
             );
           },
-          headerLeft: () => (
-            <IconButton
-              icon="menu"
-              onPress={() => navigation.openDrawer()}
-            />
-          ),
+          headerLeft: () => <IconButton icon="menu" onPress={() => navigation.openDrawer()} />,
           headerTitleAlign: 'center',
         }}
       />
@@ -81,23 +78,18 @@ function ChatStack({ navigation }: ChatStackProps) {
 function SettingsStack({ navigation }: SettingsStackProps) {
   return (
     <Stack.Navigator>
-      <Stack.Screen 
-        name="Settings" 
+      <Stack.Screen
+        name="Settings"
         component={SettingsScreen}
         options={{
           title: '设置',
-          headerLeft: () => (
-            <IconButton
-              icon="menu"
-              onPress={() => navigation.openDrawer()}
-            />
-          ),
+          headerLeft: () => <IconButton icon="menu" onPress={() => navigation.openDrawer()} />,
         }}
       />
-      <Stack.Screen 
-        name="ModelConfig" 
+      <Stack.Screen
+        name="ModelConfig"
         component={ModelConfigScreen}
-        options={{ 
+        options={{
           title: '配置模型',
         }}
       />
@@ -108,20 +100,20 @@ function SettingsStack({ navigation }: SettingsStackProps) {
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="ChatStack">
-      <Drawer.Screen 
-        name="ChatStack" 
+      <Drawer.Screen
+        name="ChatStack"
         component={ChatStack}
-        options={{ 
+        options={{
           title: '对话',
-          headerShown: false
+          headerShown: false,
         }}
       />
-      <Drawer.Screen 
-        name="SettingsStack" 
+      <Drawer.Screen
+        name="SettingsStack"
         component={SettingsStack}
-        options={{ 
+        options={{
           title: '设置',
-          headerShown: false
+          headerShown: false,
         }}
       />
     </Drawer.Navigator>

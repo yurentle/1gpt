@@ -13,7 +13,7 @@ export const ChatListScreen = ({ navigation }) => {
       createChat(defaultProviderId, defaultModelId);
       navigation.navigate('ChatStack', {
         screen: 'Chat',
-        params: { chatId: null }
+        params: { chatId: null },
       });
     }
   };
@@ -22,23 +22,21 @@ export const ChatListScreen = ({ navigation }) => {
     <View style={styles.container}>
       <FlatList
         data={chats}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <List.Item
             title={item.title}
             description={new Date(item.updatedAt).toLocaleString()}
-            onPress={() => navigation.navigate('ChatStack', {
-              screen: 'Chat',
-              params: { chatId: item.id }
-            })}
+            onPress={() =>
+              navigation.navigate('ChatStack', {
+                screen: 'Chat',
+                params: { chatId: item.id },
+              })
+            }
           />
         )}
       />
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={handleNewChat}
-      />
+      <FAB icon="plus" style={styles.fab} onPress={handleNewChat} />
     </View>
   );
 };
@@ -53,4 +51,4 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-}); 
+});

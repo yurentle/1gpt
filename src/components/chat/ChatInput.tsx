@@ -37,13 +37,7 @@ export const ChatInput = ({ onSend, onImageRequest, disabled }: ChatInputProps) 
         style={styles.input}
         multiline
         disabled={disabled}
-        right={
-          <TextInput.Icon
-            icon="send"
-            onPress={handleSend}
-            disabled={disabled}
-          />
-        }
+        right={<TextInput.Icon icon="send" onPress={handleSend} disabled={disabled} />}
       />
     </View>
   );
@@ -63,4 +57,4 @@ const styles = StyleSheet.create({
     flex: 1,
     maxHeight: 100,
   },
-}); 
+});

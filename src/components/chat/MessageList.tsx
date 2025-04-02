@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 import { Message as MessageType } from '../../types/chat';
 import { MessageBubble } from './MessageBubble';
 
@@ -11,7 +11,7 @@ export const MessageList = ({ messages }: Props) => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       onContentSizeChange={() => {
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
-}); 
+});
