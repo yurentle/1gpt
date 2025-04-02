@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { Portal, Modal, List, Divider, Text } from 'react-native-paper';
+import { Portal, Modal, List, Divider, Text, IconButton } from 'react-native-paper';
 import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { MessageList } from '../components/chat/MessageList';
@@ -20,8 +20,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export const ChatScreen = ({ route, navigation }: Props) => {
   const { chatId } = route.params || {};
-  const { chats, addMessage, createChat, updateMessage, removeMessage, getOrCreateChat } =
-    useChatStore();
+  const { chats, addMessage, updateMessage, removeMessage, getOrCreateChat } = useChatStore();
   const { providers, defaultProviderId, defaultModelId, setDefaultModel } = useSettingsStore();
   const chat = chats.find(c => c.id === chatId);
   const [isImageDialogVisible, setIsImageDialogVisible] = useState(false);
@@ -70,7 +69,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
         });
 
         // 获取流式响应
-        const response = await APIClient.makeStreamCompletion(chat.providerId, {
+        await APIClient.makeStreamCompletion(chat.providerId, {
           messages: [...chat.messages, userMessage].map(({ role, content }) => ({
             role,
             content,

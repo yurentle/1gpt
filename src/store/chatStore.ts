@@ -6,13 +6,13 @@ import { Chat, Message } from '../types/chat';
 interface ChatState {
   chats: Chat[];
   currentChatId: string | null;
-  createChat: (providerId: string, modelId: string) => string;
+  getOrCreateChat: (providerId: string, modelId: string) => string;
+  createNewChat: (providerId: string, modelId: string) => string;
   addMessage: (chatId: string, message: Message) => void;
   setCurrentChat: (chatId: string) => void;
   deleteChat: (chatId: string) => void;
   updateMessage: (chatId: string, messageId: string, content: string) => void;
   removeMessage: (chatId: string, messageId: string) => void;
-  getOrCreateChat: (providerId: string, modelId: string) => string;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -21,7 +21,7 @@ export const useChatStore = create<ChatState>()(
       chats: [],
       currentChatId: null,
 
-      createChat: (providerId, modelId) => {
+      createNewChat: (providerId, modelId) => {
         const chatId = Date.now().toString();
         const newChat: Chat = {
           id: chatId,
@@ -42,7 +42,7 @@ export const useChatStore = create<ChatState>()(
       },
 
       getOrCreateChat: (providerId, modelId) => {
-        const { chats, currentChatId, createChat } = get();
+        const { chats, currentChatId, createNewChat } = get();
 
         // 如果有当前聊天，直接返回
         if (currentChatId && chats.find(c => c.id === currentChatId)) {
@@ -60,7 +60,7 @@ export const useChatStore = create<ChatState>()(
         }
 
         // 如果没有找到合适的聊天，创建新的
-        return createChat(providerId, modelId);
+        return createNewChat(providerId, modelId);
       },
 
       addMessage: (chatId, message) =>

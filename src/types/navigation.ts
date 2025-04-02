@@ -10,8 +10,8 @@ export type RootStackParamList = {
 
 export type RootDrawerParamList = {
   ChatStack: {
-    screen?: 'Chat';
-    params?: { showModelSelect?: boolean };
+    screen: 'Chat';
+    params: RootStackParamList['Chat'];
   };
   SettingsStack: undefined;
 };

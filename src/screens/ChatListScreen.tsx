@@ -5,12 +5,12 @@ import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
 
 export const ChatListScreen = ({ navigation }) => {
-  const { chats, createChat } = useChatStore();
+  const { chats, createNewChat } = useChatStore();
   const { defaultProviderId, defaultModelId } = useSettingsStore();
 
   const handleNewChat = () => {
     if (defaultProviderId && defaultModelId) {
-      createChat(defaultProviderId, defaultModelId);
+      createNewChat(defaultProviderId, defaultModelId);
       navigation.navigate('ChatStack', {
         screen: 'Chat',
         params: { chatId: null },

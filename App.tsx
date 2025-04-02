@@ -12,6 +12,7 @@ import { useSettingsStore } from './src/store/settingsStore';
 import { RootStackParamList, RootDrawerParamList } from './src/types/navigation';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useChatStore } from './src/store/chatStore';
 
 // 禁用 react-native-screens 以支持热更新
 enableScreens(false);
@@ -41,13 +42,21 @@ function ChatStack({ navigation }: ChatStackProps) {
   const { providers, defaultProviderId, defaultModelId } = useSettingsStore();
   const currentProvider = providers.find(p => p.id === defaultProviderId);
   const currentModel = currentProvider?.supportedModels.find(m => m.id === defaultModelId);
+  const { createNewChat, chats } = useChatStore();
+
+  // 添加检查当前会话是否为空的函数
+  const isCurrentChatEmpty = (chatId: string | undefined) => {
+    if (!chatId) return true;
+    const chat = chats.find(c => c.id === chatId);
+    return !chat || chat.messages.length === 0;
+  };
 
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Chat"
         component={ChatScreen}
-        options={{
+        options={({ route }) => ({
           headerTitle: () => (
             <Button
               mode="text"
@@ -64,8 +73,27 @@ function ChatStack({ navigation }: ChatStackProps) {
             </Button>
           ),
           headerLeft: () => <IconButton icon="menu" onPress={() => navigation.openDrawer()} />,
+          headerRight: () => (
+            <IconButton
+              icon="plus"
+              onPress={() => {
+                // 如果当前会话为空，不创建新会话
+                if (isCurrentChatEmpty(route.params?.chatId)) {
+                  return;
+                }
+
+                if (defaultProviderId && defaultModelId) {
+                  const newChatId = createNewChat(defaultProviderId, defaultModelId);
+                  navigation.navigate('ChatStack', {
+                    screen: 'Chat',
+                    params: { chatId: newChatId },
+                  } as const);
+                }
+              }}
+            />
+          ),
           headerTitleAlign: 'center',
-        }}
+        })}
       />
     </Stack.Navigator>
   );
