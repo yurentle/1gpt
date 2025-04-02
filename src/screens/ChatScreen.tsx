@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { Portal, Modal, List, Divider, Text, IconButton } from 'react-native-paper';
+import { Portal, Modal, List, Divider, Text } from 'react-native-paper';
 import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { MessageList } from '../components/chat/MessageList';
@@ -9,6 +9,7 @@ import { ImageGenerationDialog } from '../components/chat/ImageGenerationDialog'
 import { ErrorSnackbar } from '../components/common/ErrorSnackbar';
 import { APIClient } from '../api/client';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Message } from '@/types/chat';
 
 type RootStackParamList = {
   Chat: { chatId?: string; showModelSelect?: boolean };
@@ -31,11 +32,16 @@ export const ChatScreen = ({ route, navigation }: Props) => {
   const currentProvider = providers.find(p => p.id === defaultProviderId);
 
   useEffect(() => {
-    if (!chat && defaultProviderId && defaultModelId) {
-      const existingChatId = getOrCreateChat(defaultProviderId, defaultModelId);
-      navigation.setParams({ chatId: existingChatId });
+    if (!defaultProviderId || !defaultModelId) return;
+
+    // 如果没有 chatId 或找不到对应的会话，创建新会话
+    if (!chatId || !chats.find(c => c.id === chatId)) {
+      const newChatId = getOrCreateChat(defaultProviderId, defaultModelId);
+      if (newChatId !== chatId) {
+        navigation.setParams({ chatId: newChatId });
+      }
     }
-  }, [chat, defaultProviderId, defaultModelId, getOrCreateChat, navigation]);
+  }, [chatId, chats, defaultProviderId, defaultModelId, getOrCreateChat, navigation]);
 
   useEffect(() => {
     if (route.params?.showModelSelect) {
@@ -48,11 +54,17 @@ export const ChatScreen = ({ route, navigation }: Props) => {
     async (content: string) => {
       if (!chat) return;
 
+      // 获取当前选择的模型信息
+      const { defaultProviderId, defaultModelId } = useSettingsStore.getState();
+      if (!defaultProviderId || !defaultModelId) return;
+
       const userMessage = {
         id: Date.now().toString(),
         role: 'user' as const,
         content,
         timestamp: Date.now(),
+        providerId: defaultProviderId,
+        modelId: defaultModelId,
       };
       addMessage(chat.id, userMessage);
 
@@ -61,28 +73,29 @@ export const ChatScreen = ({ route, navigation }: Props) => {
 
       try {
         // 创建初始的助手消息
-        addMessage(chat.id, {
+        const assistantMessage = {
           id: assistantMessageId,
           role: 'assistant',
           content: '',
           timestamp: Date.now(),
-        });
+          providerId: defaultProviderId,
+          modelId: defaultModelId,
+        };
+        addMessage(chat.id, assistantMessage as Message);
 
         // 获取流式响应
-        await APIClient.makeStreamCompletion(chat.providerId, {
-          messages: [...chat.messages, userMessage].map(({ role, content }) => ({
+        await APIClient.makeStreamCompletion(defaultProviderId, {
+          messages: chat.messages.map(({ role, content }) => ({
             role,
             content,
           })),
-          model: chat.modelId,
+          model: defaultModelId,
           onUpdate: content => {
-            // 更新助手消息的内容
             updateMessage(chat.id, assistantMessageId, content);
           },
         });
       } catch (error) {
         setError(error instanceof Error ? error.message : '发送消息失败');
-        // 发生错误时删除助手消息
         removeMessage(chat.id, assistantMessageId);
       } finally {
         setIsLoading(false);
@@ -95,19 +108,24 @@ export const ChatScreen = ({ route, navigation }: Props) => {
     async (prompt: string) => {
       if (!chat) return;
 
+      const { defaultProviderId, defaultModelId } = useSettingsStore.getState();
+      if (!defaultProviderId || !defaultModelId) return;
+
       const userMessage = {
         id: Date.now().toString(),
         role: 'user' as const,
         content: `生成图片: ${prompt}`,
         timestamp: Date.now(),
+        providerId: defaultProviderId,
+        modelId: defaultModelId,
       };
       addMessage(chat.id, userMessage);
 
       setIsLoading(true);
       try {
-        const response = await APIClient.makeImageGeneration(chat.providerId, {
+        const response = await APIClient.makeImageGeneration(defaultProviderId, {
           prompt,
-          model: chat.modelId,
+          model: defaultModelId,
           n: 1,
         });
 
@@ -116,6 +134,8 @@ export const ChatScreen = ({ route, navigation }: Props) => {
           role: 'assistant' as const,
           content: `image://${response.data[0].url}`,
           timestamp: Date.now(),
+          providerId: defaultProviderId,
+          modelId: defaultModelId,
         };
         addMessage(chat.id, assistantMessage);
       } catch (error) {

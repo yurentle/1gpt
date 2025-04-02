@@ -13,6 +13,7 @@ interface ChatState {
   deleteChat: (chatId: string) => void;
   updateMessage: (chatId: string, messageId: string, content: string) => void;
   removeMessage: (chatId: string, messageId: string) => void;
+  clearChats: () => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -21,7 +22,9 @@ export const useChatStore = create<ChatState>()(
       chats: [],
       currentChatId: null,
 
-      createNewChat: (providerId, modelId) => {
+      clearChats: () => set({ chats: [], currentChatId: null }),
+
+      createNewChat: (providerId: string, modelId: string) => {
         const chatId = Date.now().toString();
         const newChat: Chat = {
           id: chatId,
@@ -33,10 +36,10 @@ export const useChatStore = create<ChatState>()(
               content:
                 '你好！我是你的 AI 助手。我可以帮你：\n• 回答问题\n• 编写代码\n• 生成图片\n• 分析数据\n\n让我们开始对话吧！',
               timestamp: Date.now(),
+              providerId,
+              modelId,
             },
           ],
-          providerId,
-          modelId,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
@@ -49,25 +52,18 @@ export const useChatStore = create<ChatState>()(
         return chatId;
       },
 
-      getOrCreateChat: (providerId, modelId) => {
+      getOrCreateChat: (providerId: string, modelId: string) => {
         const { chats, currentChatId, createNewChat } = get();
 
-        // 如果有当前聊天，直接返回
-        if (currentChatId && chats.find(c => c.id === currentChatId)) {
-          return currentChatId;
+        // 如果有当前会话，直接返回
+        if (currentChatId) {
+          const currentChat = chats.find(c => c.id === currentChatId);
+          if (currentChat) {
+            return currentChatId;
+          }
         }
 
-        // 查找最近的聊天
-        const recentChat = chats
-          .filter(c => c.providerId === providerId && c.modelId === modelId)
-          .sort((a, b) => b.updatedAt - a.updatedAt)[0];
-
-        if (recentChat) {
-          set({ currentChatId: recentChat.id });
-          return recentChat.id;
-        }
-
-        // 如果没有找到合适的聊天，创建新的
+        // 如果没有当前会话，创建新的
         return createNewChat(providerId, modelId);
       },
 
@@ -121,6 +117,14 @@ export const useChatStore = create<ChatState>()(
     {
       name: 'chat-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      onRehydrateStorage: () => {
+        return state => {
+          if (state?.chats && state.chats.length > 50) {
+            // state.clearChats();
+          }
+        };
+      },
     }
   )
 );

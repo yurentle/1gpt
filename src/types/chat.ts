@@ -3,14 +3,14 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
+  providerId: string;
+  modelId: string;
 }
 
 export interface Chat {
   id: string;
   title: string;
   messages: Message[];
-  providerId: string;
-  modelId: string;
   createdAt: number;
   updatedAt: number;
 }
