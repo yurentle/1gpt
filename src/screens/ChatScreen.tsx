@@ -9,13 +9,7 @@ import { ErrorSnackbar } from '../components/common/ErrorSnackbar';
 import { APIClient } from '../api/client';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Message } from '@/types/chat';
-
-type RootStackParamList = {
-  Chat: { chatId?: string; showModelSelect?: boolean };
-  Settings: undefined;
-  ModelConfig: undefined;
-};
-
+import { RootStackParamList } from '../types/navigation';
 type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export const ChatScreen = ({ route, navigation }: Props) => {

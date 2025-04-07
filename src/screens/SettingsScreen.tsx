@@ -3,12 +3,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { List } from 'react-native-paper';
 import { useSettingsStore } from '../store/settingsStore';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  Settings: undefined;
-  ModelConfig: undefined;
-};
-
+import { RootStackParamList } from '../types/navigation';
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export const SettingsScreen = ({ navigation }: Props) => {

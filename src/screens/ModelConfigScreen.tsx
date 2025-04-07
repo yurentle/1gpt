@@ -5,11 +5,7 @@ import { useSettingsStore } from '../store/settingsStore';
 import { PRESET_PROVIDERS } from '../constants/providers';
 import { Provider } from '../types/provider';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  Settings: undefined;
-  ModelConfig: undefined;
-};
+import { RootStackParamList } from '../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModelConfig'>;
 

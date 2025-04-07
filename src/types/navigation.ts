@@ -1,5 +1,3 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
 export type RootStackParamList = {
   Chat: { chatId?: string; showModelSelect?: boolean };
   Settings: undefined;

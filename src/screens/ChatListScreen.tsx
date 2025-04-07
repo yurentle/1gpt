@@ -3,17 +3,20 @@ import { View, StyleSheet, FlatList } from 'react-native';
 import { List, FAB } from 'react-native-paper';
 import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 
-export const ChatListScreen = ({ navigation }) => {
+type Props = NativeStackScreenProps<RootStackParamList, 'ChatList'>;
+
+export const ChatListScreen = ({ navigation }: Props) => {
   const { chats, createNewChat } = useChatStore();
   const { defaultProviderId, defaultModelId } = useSettingsStore();
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
     if (defaultProviderId && defaultModelId) {
-      createNewChat(defaultProviderId, defaultModelId);
-      navigation.navigate('ChatStack', {
-        screen: 'Chat',
-        params: { chatId: null },
+      const chatId = await createNewChat(defaultProviderId, defaultModelId);
+      navigation.navigate('Chat', {
+        chatId: chatId,
       });
     }
   };
