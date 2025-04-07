@@ -5,7 +5,6 @@ import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { MessageList } from '../components/chat/MessageList';
 import { ChatInput } from '../components/chat/ChatInput';
-import { ImageGenerationDialog } from '../components/chat/ImageGenerationDialog';
 import { ErrorSnackbar } from '../components/common/ErrorSnackbar';
 import { APIClient } from '../api/client';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -24,7 +23,6 @@ export const ChatScreen = ({ route, navigation }: Props) => {
   const { chats, addMessage, updateMessage, removeMessage, getOrCreateChat } = useChatStore();
   const { providers, defaultProviderId, defaultModelId, setDefaultModel } = useSettingsStore();
   const chat = chats.find(c => c.id === chatId);
-  const [isImageDialogVisible, setIsImageDialogVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModelSelectVisible, setIsModelSelectVisible] = useState(false);
@@ -104,49 +102,6 @@ export const ChatScreen = ({ route, navigation }: Props) => {
     [chat, addMessage, updateMessage, removeMessage]
   );
 
-  const handleImageGeneration = useCallback(
-    async (prompt: string) => {
-      if (!chat) return;
-
-      const { defaultProviderId, defaultModelId } = useSettingsStore.getState();
-      if (!defaultProviderId || !defaultModelId) return;
-
-      const userMessage = {
-        id: Date.now().toString(),
-        role: 'user' as const,
-        content: `生成图片: ${prompt}`,
-        timestamp: Date.now(),
-        providerId: defaultProviderId,
-        modelId: defaultModelId,
-      };
-      addMessage(chat.id, userMessage);
-
-      setIsLoading(true);
-      try {
-        const response = await APIClient.makeImageGeneration(defaultProviderId, {
-          prompt,
-          model: defaultModelId,
-          n: 1,
-        });
-
-        const assistantMessage = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant' as const,
-          content: `image://${response.data[0].url}`,
-          timestamp: Date.now(),
-          providerId: defaultProviderId,
-          modelId: defaultModelId,
-        };
-        addMessage(chat.id, assistantMessage);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : '图片生成失败');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [chat, addMessage]
-  );
-
   const handleModelSelect = (modelId: string) => {
     setDefaultModel(modelId);
     setIsModelSelectVisible(false);
@@ -162,17 +117,8 @@ export const ChatScreen = ({ route, navigation }: Props) => {
         <MessageList messages={chat?.messages || []} />
       </View>
       <View style={styles.inputContainer}>
-        <ChatInput
-          onSend={handleSend}
-          onImageRequest={() => setIsImageDialogVisible(true)}
-          disabled={isLoading || !chat}
-        />
+        <ChatInput onSend={handleSend} disabled={isLoading || !chat} />
       </View>
-      <ImageGenerationDialog
-        visible={isImageDialogVisible}
-        onDismiss={() => setIsImageDialogVisible(false)}
-        onGenerate={handleImageGeneration}
-      />
       <ErrorSnackbar visible={!!error} message={error || ''} onDismiss={() => setError(null)} />
 
       <Portal>
@@ -188,13 +134,6 @@ export const ChatScreen = ({ route, navigation }: Props) => {
               <List.Item
                 key={model.id}
                 title={model.name}
-                description={
-                  model.capabilities.chat && model.capabilities.imageGeneration
-                    ? '支持聊天和图片生成'
-                    : model.capabilities.chat
-                      ? '支持聊天'
-                      : '支持图片生成'
-                }
                 onPress={() => handleModelSelect(model.id)}
                 right={props =>
                   defaultModelId === model.id ? <List.Icon {...props} icon="check" /> : null

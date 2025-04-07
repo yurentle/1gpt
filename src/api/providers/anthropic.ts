@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ChatCompletionMessageParam } from 'openai/resources';
-import { ProviderAPI, ImageGenerationParams, ImageGenerationResponse } from '../../types/api';
+import { ProviderAPI } from '../../types/api';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
 
 export class AnthropicProvider implements ProviderAPI {
@@ -11,10 +11,6 @@ export class AnthropicProvider implements ProviderAPI {
       apiKey,
       baseURL: apiBase,
     });
-  }
-
-  async makeImageGeneration(_params: ImageGenerationParams): Promise<ImageGenerationResponse> {
-    throw new Error('Anthropic 暂不支持图片生成');
   }
 
   async makeStreamCompletion(params: {

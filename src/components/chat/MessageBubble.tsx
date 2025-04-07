@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { Message } from '../../types/chat';
-import { ImageMessage } from './ImageMessage';
 
 interface MessageBubbleProps {
   message: Message;
@@ -10,11 +9,6 @@ interface MessageBubbleProps {
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.role === 'user';
-
-  // 检查消息是否包含图片URL
-  if (message.content.startsWith('image://')) {
-    return <ImageMessage url={message.content.replace('image://', '')} isUser={isUser} />;
-  }
 
   return (
     <View style={[styles.container, isUser ? styles.userContainer : styles.assistantContainer]}>
