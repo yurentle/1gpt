@@ -1,6 +1,4 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { CompositeScreenProps } from '@react-navigation/native';
-import { DrawerScreenProps } from '@react-navigation/drawer';
 
 export type RootStackParamList = {
   Chat: { chatId?: string; showModelSelect?: boolean };
@@ -15,10 +13,3 @@ export type RootDrawerParamList = {
   };
   SettingsStack: undefined;
 };
-
-export type StackScreenProps = NativeStackScreenProps<RootStackParamList>;
-
-export type DrawerScreenProps = CompositeScreenProps<
-  DrawerScreenProps<RootDrawerParamList>,
-  NativeStackScreenProps<RootStackParamList>
->;

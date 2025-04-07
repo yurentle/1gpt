@@ -213,9 +213,6 @@ export const ModelConfigScreen = ({ navigation }: Props) => {
               <List.Item
                 key={model.id}
                 title={model.name}
-                description={`${model.capabilities.chat ? '聊天' : ''}${
-                  model.capabilities.imageGeneration ? ' 图片生成' : ''
-                }`}
                 onPress={() => handleModelSelect(model.id)}
                 right={props =>
                   formData.selectedModelId === model.id ? (

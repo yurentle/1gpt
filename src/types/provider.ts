@@ -23,4 +23,4 @@ export interface Provider {
 export interface ProviderConfig extends Provider {
   apiKey: string;
   apiBase?: string;
-} 
+}
