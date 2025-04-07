@@ -13,6 +13,8 @@ import { RootStackParamList, RootDrawerParamList } from './src/types/navigation'
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useChatStore } from './src/store/chatStore';
+import { View } from 'react-native';
+import { ChatListScreen } from './src/screens/ChatListScreen';
 
 // 禁用 react-native-screens 以支持热更新
 enableScreens(false);
@@ -81,26 +83,34 @@ function ChatStack({ navigation }: ChatStackProps) {
           ),
           headerLeft: () => <IconButton icon="menu" onPress={() => navigation.openDrawer()} />,
           headerRight: () => (
-            <IconButton
-              icon="plus"
-              onPress={() => {
-                // 如果当前会话为空，不创建新会话
-                if (isCurrentChatEmpty(route.params?.chatId)) {
-                  return;
-                }
+            <View style={{ flexDirection: 'row' }}>
+              <IconButton icon="history" onPress={() => navigation.navigate('ChatListStack')} />
+              <IconButton
+                icon="plus-circle-outline"
+                onPress={() => {
+                  // 如果当前会话为空，不创建新会话
+                  if (isCurrentChatEmpty(route.params?.chatId)) {
+                    return;
+                  }
 
-                if (defaultProviderId && defaultModelId) {
-                  const newChatId = createNewChat(defaultProviderId, defaultModelId);
-                  navigation.navigate('ChatStack', {
-                    screen: 'Chat',
-                    params: { chatId: newChatId },
-                  } as const);
-                }
-              }}
-            />
+                  if (defaultProviderId && defaultModelId) {
+                    const newChatId = createNewChat(defaultProviderId, defaultModelId);
+                    navigation.navigate('ChatStack', {
+                      screen: 'Chat',
+                      params: { chatId: newChatId },
+                    } as const);
+                  }
+                }}
+              />
+            </View>
           ),
           headerTitleAlign: 'center',
         })}
+      />
+      <Stack.Screen
+        name="ChatList"
+        component={ChatListScreen}
+        options={{ title: '历史对话记录' }}
       />
     </Stack.Navigator>
   );
@@ -137,6 +147,13 @@ function DrawerNavigator() {
         options={{
           title: '对话',
           headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="ChatListStack"
+        component={ChatListScreen}
+        options={{
+          title: '历史对话记录',
         }}
       />
       <Drawer.Screen
