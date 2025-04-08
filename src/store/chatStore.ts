@@ -14,6 +14,7 @@ interface ChatState {
   updateMessage: (chatId: string, messageId: string, content: string) => void;
   removeMessage: (chatId: string, messageId: string) => void;
   clearChats: () => void;
+  setCurrentChatId: (chatId: string | null) => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -115,6 +116,10 @@ export const useChatStore = create<ChatState>()(
               : chat
           ),
         })),
+
+      setCurrentChatId: (chatId: string | null) => {
+        set({ currentChatId: chatId });
+      },
     }),
     {
       name: 'chat-storage',

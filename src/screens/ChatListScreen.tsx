@@ -19,7 +19,7 @@ type Props = {
 };
 
 export const ChatListScreen = ({ navigation }: Props) => {
-  const { chats, createNewChat } = useChatStore();
+  const { chats, createNewChat, setCurrentChatId } = useChatStore();
   const { defaultProviderId, defaultModelId } = useSettingsStore();
   const theme = useTheme();
 
@@ -31,6 +31,14 @@ export const ChatListScreen = ({ navigation }: Props) => {
         params: { chatId },
       });
     }
+  };
+
+  const handleChatPress = (chatId: string) => {
+    setCurrentChatId(chatId);
+    navigation.navigate('ChatStack', {
+      screen: 'Chat',
+      params: { chatId },
+    });
   };
 
   const renderEmptyList = () => (
@@ -55,12 +63,7 @@ export const ChatListScreen = ({ navigation }: Props) => {
               titleStyle={styles.chatTitle}
               description={formatDate(item.updatedAt)}
               descriptionStyle={styles.chatDate}
-              onPress={() =>
-                navigation.navigate('ChatStack', {
-                  screen: 'Chat',
-                  params: { chatId: item.id },
-                })
-              }
+              onPress={() => handleChatPress(item.id)}
               style={styles.listItem}
             />
           </Surface>
