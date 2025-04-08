@@ -1,15 +1,20 @@
 export type RootStackParamList = {
-  Chat: { chatId?: string; showModelSelect?: boolean };
+  Chat: {
+    chatId: string;
+    showModelSelect?: boolean;
+  };
+  ChatList: undefined;
   Settings: undefined;
   ModelConfig: undefined;
-  ChatList: undefined;
 };
 
 export type RootDrawerParamList = {
-  ChatStack: {
-    screen: 'Chat';
-    params: RootStackParamList['Chat'];
-  };
+  ChatStack:
+    | {
+        screen: 'Chat';
+        params: RootStackParamList['Chat'];
+      }
+    | undefined;
   ChatListStack: undefined;
   SettingsStack: undefined;
 };
