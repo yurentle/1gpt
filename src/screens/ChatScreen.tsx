@@ -15,7 +15,15 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export const ChatScreen = ({ route, navigation }: Props) => {
   const { chatId } = route.params || {};
-  const { chats, addMessage, updateMessage, removeMessage, getOrCreateChat } = useChatStore();
+  const {
+    chats,
+    addMessage,
+    updateMessage,
+    removeMessage,
+    getOrCreateChat,
+    shouldUpdateTitle,
+    updateChatTitle,
+  } = useChatStore();
   const { providers, defaultProviderId, defaultModelId, setDefaultModel } = useSettingsStore();
   const chat = chats.find(c => c.id === chatId);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +50,45 @@ export const ChatScreen = ({ route, navigation }: Props) => {
       navigation.setParams({ showModelSelect: undefined });
     }
   }, [route.params?.showModelSelect, navigation]);
+
+  const generateTitle = useCallback(
+    async (userMessage: string) => {
+      if (!chat || !defaultProviderId || !defaultModelId) return;
+
+      try {
+        let title = '';
+        const prompt = `请用不超过15个字对以下用户问题进行总结，直接返回总结的内容，不要加任何额外的话：\n${userMessage}`;
+
+        await APIClient.makeStreamCompletion(defaultProviderId, {
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个帮助总结对话主题的助手，请简明扼要地总结用户的问题。',
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          model: defaultModelId,
+          onUpdate: content => {
+            title = content;
+          },
+        });
+
+        // 等待流式响应完成后，使用最终的标题更新
+        if (title) {
+          updateChatTitle(chat.id, title.trim());
+        }
+      } catch (error) {
+        console.error('生成标题失败:', error);
+        // 如果生成标题失败，使用用户消息的前15个字作为标题
+        const fallbackTitle = userMessage.slice(0, 15) + (userMessage.length > 15 ? '...' : '');
+        updateChatTitle(chat.id, fallbackTitle);
+      }
+    },
+    [chat, defaultProviderId, defaultModelId, updateChatTitle]
+  );
 
   const handleSend = useCallback(
     async (content: string) => {
@@ -87,6 +134,11 @@ export const ChatScreen = ({ route, navigation }: Props) => {
             updateMessage(chat.id, assistantMessageId, content);
           },
         });
+
+        // 检查是否需要更新标题（第一条用户消息）
+        if (shouldUpdateTitle(chat.id)) {
+          await generateTitle(content);
+        }
       } catch (error) {
         setError(error instanceof Error ? error.message : '发送消息失败');
         removeMessage(chat.id, assistantMessageId);
@@ -94,7 +146,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
         setIsLoading(false);
       }
     },
-    [chat, addMessage, updateMessage, removeMessage]
+    [chat, addMessage, updateMessage, removeMessage, shouldUpdateTitle, generateTitle]
   );
 
   const handleModelSelect = (modelId: string) => {

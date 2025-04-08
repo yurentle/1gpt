@@ -15,6 +15,8 @@ interface ChatState {
   removeMessage: (chatId: string, messageId: string) => void;
   clearChats: () => void;
   setCurrentChatId: (chatId: string | null) => void;
+  updateChatTitle: (chatId: string, title: string) => void;
+  shouldUpdateTitle: (chatId: string) => boolean;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -119,6 +121,28 @@ export const useChatStore = create<ChatState>()(
 
       setCurrentChatId: (chatId: string | null) => {
         set({ currentChatId: chatId });
+      },
+
+      updateChatTitle: (chatId: string, title: string) => {
+        set(state => ({
+          chats: state.chats.map(chat =>
+            chat.id === chatId
+              ? {
+                  ...chat,
+                  title: title,
+                }
+              : chat
+          ),
+        }));
+      },
+
+      shouldUpdateTitle: (chatId: string) => {
+        const chat = get().chats.find(c => c.id === chatId);
+        if (!chat) return false;
+
+        // 如果标题还是默认的"新对话"，并且用户消息数量为1，则需要更新标题
+        const userMessages = chat.messages.filter(m => m.role === 'user');
+        return chat.title === '新对话' && userMessages.length === 1;
       },
     }),
     {
