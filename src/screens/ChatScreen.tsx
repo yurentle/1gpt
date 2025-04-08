@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { Portal, Modal, List, Divider, Text } from 'react-native-paper';
 import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
@@ -10,6 +10,7 @@ import { APIClient } from '../api/client';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Message } from '@/types/chat';
 import { RootStackParamList } from '../types/navigation';
+import { isIOS } from '../utils/platform';
 type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export const ChatScreen = ({ route, navigation }: Props) => {
@@ -104,8 +105,8 @@ export const ChatScreen = ({ route, navigation }: Props) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      behavior={isIOS ? 'padding' : 'height'}
+      keyboardVerticalOffset={isIOS ? 88 : 0}
     >
       <View style={styles.messageContainer}>
         <MessageList messages={chat?.messages || []} />
