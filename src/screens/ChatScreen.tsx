@@ -58,7 +58,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
         providerId: defaultProviderId,
         modelId: defaultModelId,
       };
-      addMessage(chat.id, userMessage);
+      const messages = await addMessage(chat.id, userMessage);
 
       setIsLoading(true);
       const assistantMessageId = (Date.now() + 1).toString();
@@ -77,7 +77,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
 
         // 获取流式响应
         await APIClient.makeStreamCompletion(defaultProviderId, {
-          messages: chat.messages.map(({ role, content }) => ({
+          messages: messages.map(({ role, content }) => ({
             role,
             content,
           })),

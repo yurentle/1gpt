@@ -8,7 +8,7 @@ interface ChatState {
   currentChatId: string | null;
   getOrCreateChat: (providerId: string, modelId: string) => string;
   createNewChat: (providerId: string, modelId: string) => string;
-  addMessage: (chatId: string, message: Message) => void;
+  addMessage: (chatId: string, message: Message) => Message[];
   setCurrentChat: (chatId: string) => void;
   deleteChat: (chatId: string) => void;
   updateMessage: (chatId: string, messageId: string, content: string) => void;
@@ -67,7 +67,7 @@ export const useChatStore = create<ChatState>()(
         return createNewChat(providerId, modelId);
       },
 
-      addMessage: (chatId, message) =>
+      addMessage: (chatId, message) => {
         set(state => ({
           chats: state.chats.map(chat =>
             chat.id === chatId
@@ -78,7 +78,9 @@ export const useChatStore = create<ChatState>()(
                 }
               : chat
           ),
-        })),
+        }));
+        return get().chats.find(c => c.id === chatId)?.messages || [];
+      },
 
       setCurrentChat: chatId => set({ currentChatId: chatId }),
 
