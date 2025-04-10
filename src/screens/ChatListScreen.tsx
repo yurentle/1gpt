@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, Pressable, GestureResponderEvent } from 'react-native';
 import {
   List,
@@ -31,14 +31,13 @@ type Props = {
 };
 
 export const ChatListScreen = ({ navigation }: Props) => {
-  const { chats, createNewChat, setCurrentChatId, deleteChat, updateChatTitle, currentChatId } =
-    useChatStore();
+  const { chats, setCurrentChatId, deleteChat, updateChatTitle, currentChatId } = useChatStore();
   const { defaultProviderId, defaultModelId } = useSettingsStore();
   const theme = useTheme();
 
   // 状态管理
   const [menuVisible, setMenuVisible] = useState(false);
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(currentChatId);
   const [editDialogVisible, setEditDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -46,6 +45,8 @@ export const ChatListScreen = ({ navigation }: Props) => {
 
   const handleNewChat = async () => {
     if (defaultProviderId && defaultModelId) {
+      setSelectedChatId(null);
+      setCurrentChatId(null);
       navigation.navigate('ChatStack', {
         screen: 'Chat',
         params: { chatId: null },
@@ -55,6 +56,7 @@ export const ChatListScreen = ({ navigation }: Props) => {
 
   const handleChatPress = (chatId: string) => {
     setCurrentChatId(chatId);
+    setSelectedChatId(chatId);
     navigation.navigate('ChatStack', {
       screen: 'Chat',
       params: { chatId },
@@ -108,6 +110,12 @@ export const ChatListScreen = ({ navigation }: Props) => {
     }
   };
 
+  useEffect(() => {
+    if (!currentChatId) {
+      setSelectedChatId(null);
+    }
+  }, [currentChatId]);
+
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
       <IconButton icon="chat-outline" />
@@ -124,7 +132,7 @@ export const ChatListScreen = ({ navigation }: Props) => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyList}
         renderItem={({ item }) => (
-          <Surface style={[styles.chatItem, item.id === currentChatId && styles.activeChatItem]}>
+          <Surface style={[styles.chatItem, item.id === selectedChatId && styles.activeChatItem]}>
             <Pressable
               onPress={() => handleChatPress(item.id)}
               onLongPress={event => handleChatLongPress(item.id, event)}
@@ -132,11 +140,14 @@ export const ChatListScreen = ({ navigation }: Props) => {
             >
               <List.Item
                 title={item.title || '新对话'}
-                titleStyle={[styles.chatTitle, item.id === currentChatId && styles.activeChatTitle]}
+                titleStyle={[
+                  styles.chatTitle,
+                  item.id === selectedChatId && styles.activeChatTitle,
+                ]}
                 description={formatDate(item.updatedAt)}
                 descriptionStyle={[
                   styles.chatDate,
-                  item.id === currentChatId && styles.activeChatDate,
+                  item.id === selectedChatId && styles.activeChatDate,
                 ]}
                 style={styles.listItem}
               />

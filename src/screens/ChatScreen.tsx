@@ -18,6 +18,7 @@ export const ChatScreen = ({ route, navigation }: Props) => {
   const { chatId } = route.params || {};
   const {
     chats,
+    setCurrentChatId,
     addMessage,
     updateMessage,
     removeMessage,
@@ -179,6 +180,11 @@ export const ChatScreen = ({ route, navigation }: Props) => {
 
   // 使用实际的对话或虚拟对话
   const currentChat = chat || virtualNewChat;
+
+  useEffect(() => {
+    // 当进入聊天页面时，设置当前聊天为空
+    setCurrentChatId(null);
+  }, []);
 
   return (
     <KeyboardAvoidingView

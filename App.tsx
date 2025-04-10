@@ -42,6 +42,7 @@ interface SettingsStackProps {
 
 function ChatStack({ navigation }: ChatStackProps) {
   const { providers, defaultProviderId, defaultModelId } = useSettingsStore();
+  const { setCurrentChatId } = useChatStore();
   const currentProvider = providers.find(p => p.id === defaultProviderId);
   const currentModel = currentProvider?.supportedModels.find(m => m.id === defaultModelId);
 
@@ -73,6 +74,7 @@ function ChatStack({ navigation }: ChatStackProps) {
               <IconButton
                 icon="plus-circle-outline"
                 onPress={() => {
+                  setCurrentChatId(null);
                   navigation.navigate('ChatStack', {
                     screen: 'Chat',
                     params: { chatId: null },
