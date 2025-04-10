@@ -1,6 +1,18 @@
-import React from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
-import { List, FAB, Text, Surface, useTheme, IconButton } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, StyleSheet, FlatList, Pressable, GestureResponderEvent } from 'react-native';
+import {
+  List,
+  FAB,
+  Text,
+  Surface,
+  useTheme,
+  IconButton,
+  Portal,
+  Dialog,
+  TextInput,
+  Button,
+  Card,
+} from 'react-native-paper';
 import { useChatStore } from '../store/chatStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { CompositeNavigationProp } from '@react-navigation/native';
@@ -19,9 +31,18 @@ type Props = {
 };
 
 export const ChatListScreen = ({ navigation }: Props) => {
-  const { chats, createNewChat, setCurrentChatId } = useChatStore();
+  const { chats, createNewChat, setCurrentChatId, deleteChat, updateChatTitle, currentChatId } =
+    useChatStore();
   const { defaultProviderId, defaultModelId } = useSettingsStore();
   const theme = useTheme();
+
+  // 状态管理
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [editDialogVisible, setEditDialogVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   const handleNewChat = async () => {
     if (defaultProviderId && defaultModelId) {
@@ -41,6 +62,43 @@ export const ChatListScreen = ({ navigation }: Props) => {
     });
   };
 
+  const handleChatLongPress = (chatId: string, event: GestureResponderEvent) => {
+    const { pageY, pageX } = event.nativeEvent;
+    setMenuPosition({ top: pageY, left: pageX });
+    setSelectedChatId(chatId);
+    setMenuVisible(true);
+  };
+
+  const handleEdit = () => {
+    const chat = chats.find(c => c.id === selectedChatId);
+    if (chat) {
+      setEditTitle(chat.title);
+      setEditDialogVisible(true);
+    }
+    setMenuVisible(false);
+  };
+
+  const handleDelete = () => {
+    setDeleteDialogVisible(true);
+    setMenuVisible(false);
+  };
+
+  const handleEditConfirm = () => {
+    if (selectedChatId && editTitle.trim()) {
+      updateChatTitle(selectedChatId, editTitle.trim());
+      setEditDialogVisible(false);
+      setSelectedChatId(null);
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedChatId) {
+      deleteChat(selectedChatId);
+      setDeleteDialogVisible(false);
+      setSelectedChatId(null);
+    }
+  };
+
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
       <IconButton icon="chat-outline" />
@@ -57,15 +115,23 @@ export const ChatListScreen = ({ navigation }: Props) => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyList}
         renderItem={({ item }) => (
-          <Surface style={styles.chatItem}>
-            <List.Item
-              title={item.title || '新对话'}
-              titleStyle={styles.chatTitle}
-              description={formatDate(item.updatedAt)}
-              descriptionStyle={styles.chatDate}
+          <Surface style={[styles.chatItem, item.id === currentChatId && styles.activeChatItem]}>
+            <Pressable
               onPress={() => handleChatPress(item.id)}
-              style={styles.listItem}
-            />
+              onLongPress={event => handleChatLongPress(item.id, event)}
+              android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            >
+              <List.Item
+                title={item.title || '新对话'}
+                titleStyle={[styles.chatTitle, item.id === currentChatId && styles.activeChatTitle]}
+                description={formatDate(item.updatedAt)}
+                descriptionStyle={[
+                  styles.chatDate,
+                  item.id === currentChatId && styles.activeChatDate,
+                ]}
+                style={styles.listItem}
+              />
+            </Pressable>
           </Surface>
         )}
       />
@@ -75,6 +141,62 @@ export const ChatListScreen = ({ navigation }: Props) => {
         color="white"
         onPress={handleNewChat}
       />
+
+      {/* 长按菜单 */}
+      <Portal>
+        {menuVisible && (
+          <Pressable style={styles.menuOverlay} onPress={() => setMenuVisible(false)}>
+            <Card
+              style={[
+                styles.menuCard,
+                {
+                  top: menuPosition.top,
+                  left: menuPosition.left,
+                },
+              ]}
+            >
+              <Pressable onPress={handleEdit} style={styles.menuItem}>
+                <IconButton icon="pencil" size={20} />
+                <Text>编辑</Text>
+              </Pressable>
+              <Pressable onPress={handleDelete} style={styles.menuItem}>
+                <IconButton icon="delete" size={20} />
+                <Text>删除</Text>
+              </Pressable>
+            </Card>
+          </Pressable>
+        )}
+      </Portal>
+
+      {/* 编辑对话框 */}
+      <Portal>
+        <Dialog visible={editDialogVisible} onDismiss={() => setEditDialogVisible(false)}>
+          <Dialog.Title>编辑标题</Dialog.Title>
+          <Dialog.Content>
+            <TextInput value={editTitle} onChangeText={setEditTitle} mode="outlined" autoFocus />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setEditDialogVisible(false)}>取消</Button>
+            <Button onPress={handleEditConfirm}>确定</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      {/* 删除确认对话框 */}
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
+          <Dialog.Title>确认删除</Dialog.Title>
+          <Dialog.Content>
+            <Text>确定要删除这个对话吗？此操作不可撤销。</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteDialogVisible(false)}>取消</Button>
+            <Button onPress={handleDeleteConfirm} textColor={theme.colors.error}>
+              删除
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 };
@@ -83,16 +205,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    padding: 16,
-    elevation: 4,
-    backgroundColor: 'white',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 8,
   },
   listContent: {
     padding: 16,
@@ -103,6 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 2,
     backgroundColor: 'white',
+    overflow: 'hidden',
   },
   listItem: {
     padding: 4,
@@ -114,15 +227,6 @@ const styles = StyleSheet.create({
   chatDate: {
     fontSize: 12,
     marginTop: 4,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
   },
   fab: {
     position: 'absolute',
@@ -146,5 +250,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginTop: 8,
+  },
+  menuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  menuCard: {
+    position: 'absolute',
+    minWidth: 150,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    elevation: 4,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  activeChatItem: {
+    borderWidth: 2,
+    borderColor: 'rgba(103, 80, 164, 0.1)',
+    backgroundColor: 'rgba(103, 80, 164, 0.05)',
+  },
+  activeChatTitle: {
+    color: '#6750A4',
+    fontWeight: '700',
+  },
+  activeChatDate: {
+    color: '#6750A4',
   },
 });
