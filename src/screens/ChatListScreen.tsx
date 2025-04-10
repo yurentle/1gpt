@@ -46,10 +46,9 @@ export const ChatListScreen = ({ navigation }: Props) => {
 
   const handleNewChat = async () => {
     if (defaultProviderId && defaultModelId) {
-      const chatId = await createNewChat(defaultProviderId, defaultModelId);
       navigation.navigate('ChatStack', {
         screen: 'Chat',
-        params: { chatId },
+        params: { chatId: null },
       });
     }
   };
