@@ -44,21 +44,6 @@ function ChatStack({ navigation }: ChatStackProps) {
   const { providers, defaultProviderId, defaultModelId } = useSettingsStore();
   const currentProvider = providers.find(p => p.id === defaultProviderId);
   const currentModel = currentProvider?.supportedModels.find(m => m.id === defaultModelId);
-  const { createNewChat, chats } = useChatStore();
-
-  // 修改检查当前会话是否为空的函数
-  const isCurrentChatEmpty = (chatId: string | undefined) => {
-    if (!chatId) return true;
-    const chat = chats.find(c => c.id === chatId);
-    if (!chat) return true;
-
-    // 如果只有一条消息且是欢迎消息，则认为是空会话
-    if (chat.messages.length === 1 && chat.messages[0].id === 'welcome') {
-      return true;
-    }
-
-    return false;
-  };
 
   return (
     <Stack.Navigator>
@@ -72,7 +57,7 @@ function ChatStack({ navigation }: ChatStackProps) {
               onPress={() => {
                 navigation.navigate('ChatStack', {
                   screen: 'Chat',
-                  params: { showModelSelect: true },
+                  params: { chatId: route.params?.chatId || null, showModelSelect: true },
                 } as const);
               }}
               icon="chevron-down"
@@ -88,18 +73,10 @@ function ChatStack({ navigation }: ChatStackProps) {
               <IconButton
                 icon="plus-circle-outline"
                 onPress={() => {
-                  // 如果当前会话为空，不创建新会话
-                  if (isCurrentChatEmpty(route.params?.chatId)) {
-                    return;
-                  }
-
-                  if (defaultProviderId && defaultModelId) {
-                    const newChatId = createNewChat(defaultProviderId, defaultModelId);
-                    navigation.navigate('ChatStack', {
-                      screen: 'Chat',
-                      params: { chatId: newChatId },
-                    } as const);
-                  }
+                  navigation.navigate('ChatStack', {
+                    screen: 'Chat',
+                    params: { chatId: null },
+                  } as const);
                 }}
               />
             </View>

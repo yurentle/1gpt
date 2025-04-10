@@ -93,9 +93,19 @@ export const ChatListScreen = ({ navigation }: Props) => {
 
   const handleDeleteConfirm = () => {
     if (selectedChatId) {
+      if (selectedChatId === currentChatId) {
+        setCurrentChatId(null);
+      }
       deleteChat(selectedChatId);
       setDeleteDialogVisible(false);
       setSelectedChatId(null);
+
+      if (selectedChatId === currentChatId) {
+        navigation.navigate('ChatStack', {
+          screen: 'Chat',
+          params: { chatId: null },
+        });
+      }
     }
   };
 

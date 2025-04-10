@@ -1,6 +1,6 @@
 export type RootStackParamList = {
   Chat: {
-    chatId: string;
+    chatId: string | null;
     showModelSelect?: boolean;
   };
   ChatList: undefined;
